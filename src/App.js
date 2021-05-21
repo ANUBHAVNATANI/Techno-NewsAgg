@@ -1,15 +1,9 @@
 import React from "react";
 import { BrowserRouter as Router, Switch, Route, Link } from "react-router-dom";
-import FeedView from "./views/FeedView";
-//import FetchRss from "./components/FetchRss";
-import FeedForm from "./components/FeedForm";
-import Settings from "./views/Settings";
-//import FetchRss1 from "./components/FetchRss1";
 import Store from "./store/Store";
 import LeftBar from "./components/LeftBar";
 import UserProvider from "./providers/userProvider";
 import Login from "./components/Login";
-//import Test from "./components/Test";
 
 function App() {
   return (

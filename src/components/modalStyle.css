@@ -1,0 +1,14 @@
+#modalContent {
+  width: 100%;
+}
+#modalContent img {
+  max-width: 100%;
+}
+#modalContent video {
+  max-width: 100%;
+}
+/* #iframeContainer {
+  position: relative;
+  overflow: hidden;
+  padding-top: 56.25%;
+} */

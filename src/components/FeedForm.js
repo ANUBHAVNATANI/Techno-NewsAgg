@@ -35,13 +35,13 @@ export default function FeedForm() {
         payload: value
       });
     }
-    try {
-      const feed = await fetchFeed(value);
-      dispatch({ type: "ADD_FEED_DATA", payload: [value, feed] });
-      dispatch({ type: "ADD_TO_FEED_LIST", payload: feed });
-    } catch (err) {
-      throw err;
-    }
+    // try {
+    //   const feed = await fetchFeed(value);
+    //   dispatch({ type: "ADD_FEED_DATA", payload: [value, feed] });
+    //   dispatch({ type: "ADD_TO_FEED_LIST", payload: feed });
+    // } catch (err) {
+    //   throw err;
+    // }
   };
   const handleAddCollectionSubmit = () => {
     if (userMadeCollection !== "") {

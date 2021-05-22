@@ -6,7 +6,7 @@ import { Context } from '../store/Store';
 import FeedItemList from '../components/FeedItemList';
 import { fetchFeed } from '../modules/feedparser';
 
-export default function FeedView() {
+export default function FeedView({ isLoading }) {
 	const [state, dispatch] = useContext(Context);
 	//const query = useQuery('feed-list', () => fetchFeed(state.feedSourceUrlList[0]))
 	// const allFeedList = state.feedSourceUrlList.map((item) => (
@@ -28,6 +28,7 @@ export default function FeedView() {
 	// }, [state.feedDataStore]);
 	return (
 		<>
+			{isLoading && <div>Loading ...</div>}
 			{/* {query.isLoading && (
 				<div
 					style={{
@@ -42,7 +43,8 @@ export default function FeedView() {
 				</div>
 			)}
 			{query.isSuccess && <FeedItemList feed={query.data} />} */}
-			{state.feedSourceCount > 0 &&
+			{!isLoading &&
+				state.feedSourceCount > 0 &&
 				Object.keys(state.feedDataStore).length === state.feedSourceCount && (
 					<FeedItemList feed={state.allFeedList} />
 				)}

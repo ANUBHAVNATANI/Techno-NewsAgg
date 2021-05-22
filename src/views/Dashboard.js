@@ -15,10 +15,10 @@ function Dashboard() {
 			<Routes>
 				<Route path="/" element={<FeedView />} />
 				<Route path="settings" element={<Settings />} />
-				{/* <Route path="/shop">
+				<Route path="/shop">
 					<Shop />
 				</Route>
-				<Route path="/:collection">
+				{/* <Route path="/:collection">
 					<CollectionsView />
 				</Route> */}
 			</Routes>

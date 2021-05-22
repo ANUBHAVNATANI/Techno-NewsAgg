@@ -1,6 +1,6 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { QueryClient, QueryClientProvider } from 'react-query';
+//import { QueryClient, QueryClientProvider } from 'react-query';
 
 import Store from './store/Store';
 import LeftBar from './components/LeftBar';
@@ -10,18 +10,18 @@ import FeedView from './views/FeedView';
 import Dashboard from './views/Dashboard';
 
 function App() {
-	const queryClient = new QueryClient();
+	// const queryClient = new QueryClient();
 
 	return (
 		<UserProvider>
-			<QueryClientProvider client={queryClient}>
-				<Router>
-					<Routes>
-						<Route path="/" element={<Login />} />
-						<Route path="dashboard/*" element={<Dashboard />} />
-					</Routes>
-				</Router>
-			</QueryClientProvider>
+			{/* <QueryClientProvider client={queryClient}> */}
+			<Router>
+				<Routes>
+					<Route path="/" element={<Login />} />
+					<Route path="dashboard/*" element={<Dashboard />} />
+				</Routes>
+			</Router>
+			{/* </QueryClientProvider> */}
 		</UserProvider>
 	);
 }

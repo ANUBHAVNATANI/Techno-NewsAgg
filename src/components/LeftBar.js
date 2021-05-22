@@ -1,6 +1,6 @@
 import React, { useState, useContext, useEffect } from 'react';
 import { Segment, Sidebar, Menu, Icon, Grid, Image } from 'semantic-ui-react';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 import Settings from '../views/Settings';
 import FeedView from '../views/FeedView';
@@ -14,36 +14,35 @@ import { logOut } from '../services/firebase';
 
 export default function LeftBar() {
 	const [state, dispatch] = useContext(Context);
-	const history = useHistory();
+	const navigate = useNavigate();
 	const [activeIndex, setActiveIndex] = useState(0);
-	// const handleItemClick = (e, { name }) => {
-	// 	setActiveItem(name);
-	// };
 	const user = useContext(UserContext);
+
 	useEffect(() => {
 		if (!user) {
-			history.push('/');
+			navigate('/');
 		}
 	}, [user]);
 
 	const constNavLinks = [
-		{ displayName: 'Feed', icon: 'home', onTap: () => history.push('/feed') },
+		{
+			displayName: 'Feed',
+			icon: 'home',
+			onTap: () => navigate('/dashboard')
+		},
 		{
 			displayName: 'Shop',
 			icon: 'shopping bag',
-			onTap: () => history.push('/shop')
+			onTap: () => navigate('/dashboard/shop')
 		},
 		{
 			displayName: 'Settings',
 			icon: 'setting',
-			onTap: () => history.push('/dashboard/settings')
+			onTap: () => navigate('/dashboard/settings')
 		},
 		{
 			displayName: 'Logout',
 			icon: 'log out',
-			// onTap: () => {
-			// 	logOut().then(() => history.push('/'));
-			// }
 			onTap: logOut
 		}
 	];
@@ -84,7 +83,10 @@ export default function LeftBar() {
 						<Menu.Item
 							name={link.displayName}
 							active={activeIndex === index}
-							onClick={link.onTap}
+							onClick={() => {
+								setActiveIndex(index);
+								link.onTap();
+							}}
 						>
 							<Icon name={link.icon} />
 							{link.displayName}

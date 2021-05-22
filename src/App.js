@@ -1,36 +1,32 @@
-import React from 'react'
-import { BrowserRouter as Router, Switch, Route } from 'react-router-dom'
-import { QueryClient, QueryClientProvider } from 'react-query'
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from 'react-query';
 
-import Store from './store/Store'
-import LeftBar from './components/LeftBar'
-import UserProvider from './providers/userProvider'
-import Login from './components/Login'
-import FeedView from './views/FeedView'
-import Dashboard from './views/Dashboard'
+import Store from './store/Store';
+import LeftBar from './components/LeftBar';
+import UserProvider from './providers/userProvider';
+import Login from './components/Login';
+import FeedView from './views/FeedView';
+import Dashboard from './views/Dashboard';
 
 function App() {
-	const queryClient = new QueryClient()
+	const queryClient = new QueryClient();
 
 	return (
 		<UserProvider>
 			<QueryClientProvider client={queryClient}>
 				<Router>
-					<Switch>
-						<Route exact path="/">
-							<Login />
-						</Route>
-						<Route exact path="/dashboard">
-							<Dashboard />
-						</Route>
-					</Switch>
+					<Routes>
+						<Route path="/" element={<Login />} />
+						<Route path="dashboard/*" element={<Dashboard />} />
+					</Routes>
 				</Router>
 			</QueryClientProvider>
 		</UserProvider>
-	)
+	);
 }
 
-export default App
+export default App;
 
 /// features to develop
 /*

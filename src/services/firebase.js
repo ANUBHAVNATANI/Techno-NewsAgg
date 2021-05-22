@@ -34,10 +34,8 @@ export const logOut = () => {
 		.signOut()
 		.then(() => {
 			console.log('logged out');
-			return Promise.resolve();
 		})
 		.catch((error) => {
 			console.log(error.message);
-			return Promise.reject();
 		});
 };

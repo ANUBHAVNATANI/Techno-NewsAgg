@@ -15,9 +15,7 @@ function Dashboard() {
 			<Routes>
 				<Route path="/" element={<FeedView />} />
 				<Route path="settings" element={<Settings />} />
-				<Route path="/shop">
-					<Shop />
-				</Route>
+				<Route path="shop" element={<Shop />} />
 				{/* <Route path="/:collection">
 					<CollectionsView />
 				</Route> */}

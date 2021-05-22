@@ -22,7 +22,7 @@ export const signInWithGoogle = () => {
 	auth
 		.signInWithPopup(googleProvider)
 		.then((res) => {
-			console.log(res.user);
+			return res.user.uid;
 		})
 		.catch((error) => {
 			console.log(error.message);

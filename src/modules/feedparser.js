@@ -1,11 +1,11 @@
-import feedparser from 'feedparser-promised'
-import * as getFeeds from 'get-feeds'
-import Mercury from '@postlight/mercury-parser'
+import feedparser from 'feedparser-promised';
+import * as getFeeds from 'get-feeds';
+import Mercury from '@postlight/mercury-parser';
 
-const CORS_PROXY = 'https://cors-proxy-rss.herokuapp.com/'
+const CORS_PROXY = 'https://cors-proxy-rss.herokuapp.com/';
 
 //url validate function
-const checkValidURL = (str) => {
+export const checkValidURL = (str) => {
 	let pattern = new RegExp(
 		'^(https?:\\/\\/)?' +
 			'((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,}|' +
@@ -14,53 +14,58 @@ const checkValidURL = (str) => {
 			'(\\?[;&a-z\\d%_.~+=-]*)?' +
 			'(\\#[-a-z\\d_]*)?$',
 		'i'
-	)
-	return !!pattern.test(str)
-}
+	);
+	return !!pattern.test(str);
+};
 
 //rss fetch function
+//unable to fetch google news feed
 export const fetchFeed = async (url) => {
 	if (checkValidURL(url)) {
-		const CORS_URL = CORS_PROXY + url
+		const CORS_URL = CORS_PROXY + url;
 		try {
-			const feed = await feedparser.parse(CORS_URL)
-			return Promise.resolve(feed)
+			const feed = await feedparser.parse(CORS_URL);
+			return feed;
 		} catch (err) {
-			throw 'Unable to fetch rss'
+			throw 'Unable to fetch rss';
 		}
 	} else {
-		throw 'Wrong URL format'
+		throw 'Wrong URL format';
 	}
-}
+};
 
 //keyword search function
 export const keywordSearch = async (keyword) => {
-	if (!checkValidURL(keyword)) {
-		let keywordFetchUrl = CORS_PROXY + 'https://cloud.feedly.com/v3/search/feeds?query=' + keyword
-		let resp = await fetch(keywordFetchUrl)
-		let data = await resp.json()
-		return data
-	}
-}
+	keyword = keyword.trim();
+	keyword = keyword.replaceAll(' ', '%20');
+	let keywordFetchUrl =
+		CORS_PROXY + 'https://cloud.feedly.com/v3/search/feeds?query=' + keyword;
+	let resp = await fetch(keywordFetchUrl);
+	let data = await resp.json();
+	return data;
+};
 
 export const handleSearch = async (value) => {
 	if (!checkValidURL(value)) {
-		let data = await keywordSearch(value)
+		let data = await keywordSearch(value);
 	}
-}
+};
 
 export const getRssLinkFromWebsite = async (url) => {
-	let htmlUrl = CORS_PROXY + url
-	let htmlString = await fetch(htmlUrl)
-	htmlString = await htmlString.text()
-	const feed = getFeeds(htmlString)
+	let htmlUrl = CORS_PROXY + url;
+	let htmlString = await fetch(htmlUrl);
+	htmlString = await htmlString.text();
+	const feedArr = getFeeds(htmlString);
 	//returning the first url as of now
 	// we should give user the choice of what to select
-	return feed[0].href
-}
+	if (feedArr.length == 0) {
+		throw 'No URL Present';
+	}
+	return feedArr[0].href;
+};
 
 export const feedParse = async (url) => {
-	let cors_url = CORS_PROXY + url
-	let feedInfoData = await Mercury.parse(cors_url)
-	return feedInfoData
-}
+	let cors_url = CORS_PROXY + url;
+	let feedInfoData = await Mercury.parse(cors_url);
+	return feedInfoData;
+};

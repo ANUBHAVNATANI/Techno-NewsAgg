@@ -1,50 +1,24 @@
 import React, { useContext, useState } from 'react';
 import { Context } from '../store/Store';
 import feedparser from 'feedparser-promised';
-import { Dropdown, Input, Form, Card, Image } from 'semantic-ui-react';
+import { Dropdown, Input, Form, Button, Card, Image } from 'semantic-ui-react';
 import * as getFeeds from 'get-feeds';
 import {
 	fetchFeed,
 	getRssLinkFromWebsite,
 	keywordSearch
 } from '../modules/feedparser';
-import { makeStyles } from '@material-ui/core/styles';
-import { Autocomplete } from '@material-ui/lab';
-import { TextField, Button } from '@material-ui/core';
-
-const useStyles = makeStyles((theme) => ({
-	root: {
-		width: '80%',
-		'& > * + *': {
-			marginTop: theme.spacing(3)
-		}
-	},
-
-	btn: {
-		width: '100%',
-		display: 'flex',
-		justifyContent: 'center',
-		alignContent: 'center'
-	},
-	paper: {
-		display: 'flex',
-		justifyContent: 'space-between'
-	}
-}));
 
 const CORS_PROXY = 'https://cors-proxy-rss.herokuapp.com/';
 export default function FeedForm() {
-	const classes = useStyles();
-
 	const [state, dispatch] = useContext(Context);
 	const [userFeedUrl, setUserFeedUrl] = useState('');
 	const [addCollectionsToggle, setAddCollectionsToggle] = useState(false);
 	const [userMadeCollection, setUserMadeCollection] = useState('');
 	const [userSelectedCollections, setUserSelectedCollections] = useState([]);
 	const [searchQueryResult, setSearchQueryResults] = useState([]);
-	const handleUrlChange = (e, value) => {
-		console.log(value);
-		// setUserFeedUrl(value);
+	const handleUrlChange = (e, { value }) => {
+		setUserFeedUrl(value);
 	};
 	const handleCollectionChange = (e, { value }) => {
 		setUserMadeCollection(value);
@@ -162,60 +136,48 @@ export default function FeedForm() {
 	}));
 
 	return (
-		<div className={classes.root}>
-			<div
-				style={{
-					display: 'flex',
-					justifyContent: 'center',
-					alignItems: 'center'
-				}}
-			>
-				<TextField
-					size="small"
-					id="outlined-basic"
-					label="Search Keyword"
-					variant="outlined"
-					style={{ marginRight: '10px', width: '30%' }}
-				/>
-
-				<Button variant="outlined" color="primary" size="large">
-					Search
-				</Button>
-			</div>
-			<div className={classes.btn}>
-				<Button onClick={handleSearchClick}>Search/Add</Button>
-			</div>
-			<Card.Group itemsPerRow={3}>{searchResults}</Card.Group>
-
-			<div>Select the Collection to add the feed to</div>
-			<Form.Dropdown
-				placeholder="Collection Name"
-				fluid
-				multiple
-				search
-				selection
-				options={collectionOptions}
-				value={userSelectedCollections || []}
-				onChange={handleSelectedCollectionChange}
-			/>
-			<div>
-				<Button onClick={() => setAddCollectionsToggle(true)}>
-					Add Collection
-				</Button>
-			</div>
-
-			{addCollectionsToggle && (
+		<div>
+			<div>Keyword or RSS URL for subscription</div>
+			<Form onSubmit={handleSubmit}>
 				<Form.Input
-					placeholder="Add Collection"
-					name="Add Collection"
-					value={userMadeCollection}
-					onChange={handleCollectionChange}
+					placeholder="Add URL"
+					name="Add URL"
+					value={userFeedUrl}
+					onChange={handleUrlChange}
 				/>
-			)}
-			<div>
-				<Button content="Submit" onClick={handleSubmit} />
-			</div>
-			{/* </Form> */}
+				<Form.Button
+					attached="bottom"
+					onClick={handleSearchClick}
+					content="Search/Add"
+				></Form.Button>
+				<Card.Group itemsPerRow={3}>{searchResults}</Card.Group>
+
+				<div>Select the Collection to add the feed to</div>
+				<Form.Dropdown
+					placeholder="Collection Name"
+					fluid
+					multiple
+					search
+					selection
+					options={collectionOptions}
+					value={userSelectedCollections || []}
+					onChange={handleSelectedCollectionChange}
+				/>
+				<Form.Button
+					attached="bottom"
+					onClick={() => setAddCollectionsToggle(true)}
+					content="Add Collection"
+				/>
+				{addCollectionsToggle && (
+					<Form.Input
+						placeholder="Add Collection"
+						name="Add Collection"
+						value={userMadeCollection}
+						onChange={handleCollectionChange}
+					/>
+				)}
+				<Form.Button content="Submit" />
+			</Form>
 		</div>
 	);
 }

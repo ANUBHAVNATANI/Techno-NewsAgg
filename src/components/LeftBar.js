@@ -47,20 +47,23 @@ export default function LeftBar() {
 		}
 	];
 
-	// const CollectionsAvatarComponent = Object.keys(state.collections).map(
-	// 	(item) => (
-	// 		<>
-	// 			<Menu.Item
-	// 				name={item}
-	// 				onClick={handleItemClick}
-	// 				active={activeItem === item}
-	// 				key={item}
-	// 			>
-	// 				<Avatar name={item} round size="30px" />
-	// 			</Menu.Item>
-	// 		</>
-	// 	)
-	// );
+	const CollectionsAvatarComponent = Object.keys(state.collections).map(
+		(item, idx) => (
+			<>
+				<Menu.Item
+					name={item}
+					onClick={() => {
+						setActiveIndex(idx + constNavLinks.length);
+						navigate(`/dashboard/${item}`);
+					}}
+					active={activeIndex === idx + constNavLinks.length}
+					key={item}
+				>
+					<Avatar name={item} round size="30px" />
+				</Menu.Item>
+			</>
+		)
+	);
 	// const renderCollectionView = Object.keys(state.collections).map((item) => (
 	// 	<>{activeItem === item && <CollectionsView collectionName={item} />}</>
 	// ));
@@ -130,7 +133,7 @@ export default function LeftBar() {
 						Log out
 					</Menu.Item> */}
 
-					{/* {CollectionsAvatarComponent} */}
+					{CollectionsAvatarComponent}
 					{/* Decision on weather text should come or not below the icon as it would then makes no sense to use the icons isted add a random avatar or on which if we hover we get the text*/}
 				</Menu>
 			</Grid.Column>

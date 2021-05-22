@@ -1,14 +1,14 @@
-import React, { useContext } from 'react'
-import { useQuery } from 'react-query'
-import { Loader } from 'semantic-ui-react'
+import React, { useContext } from 'react';
+//import { useQuery } from 'react-query'
+import { Loader } from 'semantic-ui-react';
 
-import { Context } from '../store/Store'
-import FeedItemList from '../components/FeedItemList'
-import { fetchFeed } from '../modules/feedparser'
+import { Context } from '../store/Store';
+import FeedItemList from '../components/FeedItemList';
+import { fetchFeed } from '../modules/feedparser';
 
 export default function FeedView() {
-	const [state, dispatch] = useContext(Context)
-	const query = useQuery('feed-list', () => fetchFeed(state.feedSourceUrlList[0]))
+	const [state, dispatch] = useContext(Context);
+	//const query = useQuery('feed-list', () => fetchFeed(state.feedSourceUrlList[0]))
 	// const allFeedList = state.feedSourceUrlList.map((item) => (
 	//   <FeedItemList feed={state.feedDataStore[item]} />
 	// ));
@@ -28,14 +28,24 @@ export default function FeedView() {
 	// }, [state.feedDataStore]);
 	return (
 		<>
-			{/* {state.feedSourceCount > 0 && Object.keys(state.feedDataStore).length === state.feedSourceCount && ( */}
-			{query.isLoading && (
-				<div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', width: '100vh' }}>
+			{/* {query.isLoading && (
+				<div
+					style={{
+						display: 'flex',
+						justifyContent: 'center',
+						alignItems: 'center',
+						height: '100vh',
+						width: '100vh'
+					}}
+				>
 					<Loader active />
 				</div>
 			)}
-			{query.isSuccess && <FeedItemList feed={query.data} />}
-			{/* )} */}
+			{query.isSuccess && <FeedItemList feed={query.data} />} */}
+			{state.feedSourceCount > 0 &&
+				Object.keys(state.feedDataStore).length === state.feedSourceCount && (
+					<FeedItemList feed={state.allFeedList} />
+				)}
 		</>
-	)
+	);
 }

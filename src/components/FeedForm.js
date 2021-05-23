@@ -1,24 +1,66 @@
-import React, { useContext, useState } from 'react';
+import React, { useRef, useContext, useState } from 'react';
 import { Context } from '../store/Store';
 import feedparser from 'feedparser-promised';
-import { Dropdown, Input, Form, Button, Card, Image } from 'semantic-ui-react';
+import { Dropdown, Input, Form, Card, Image } from 'semantic-ui-react';
 import * as getFeeds from 'get-feeds';
 import {
 	fetchFeed,
 	getRssLinkFromWebsite,
-	keywordSearch
+	keywordSearch,
+	checkValidURL
 } from '../modules/feedparser';
+import { makeStyles } from '@material-ui/core/styles';
+import {
+	TextField,
+	Button,
+	ListItemSecondaryAction,
+	List,
+	ListItemAvatar,
+	ListItemText,
+	Paper,
+	Avatar,
+	Grid,
+	ListItem,
+	Divider
+} from '@material-ui/core';
+import DeleteIcon from '@material-ui/icons/Delete';
+import IconButton from '@material-ui/core/IconButton';
+import LinkIcon from '@material-ui/icons/Link';
+
+const useStyles = makeStyles((theme) => ({
+	root: {
+		width: '100%',
+		'& > * + *': {
+			marginTop: theme.spacing(3)
+		}
+	},
+	btn: {
+		width: '100%',
+		display: 'flex',
+		justifyContent: 'center',
+		alignContent: 'center'
+	},
+	paper: {
+		display: 'flex',
+		justifyContent: 'space-between'
+	}
+}));
 
 const CORS_PROXY = 'https://cors-proxy-rss.herokuapp.com/';
 export default function FeedForm() {
+	const classes = useStyles();
+	const [selectedSources, setSelectedSources] = useState([]);
+	const selectedSourcesSet = useRef(new Set());
+
 	const [state, dispatch] = useContext(Context);
 	const [userFeedUrl, setUserFeedUrl] = useState('');
+	const [userFeed, setUserFeed] = useState(null);
 	const [addCollectionsToggle, setAddCollectionsToggle] = useState(false);
 	const [userMadeCollection, setUserMadeCollection] = useState('');
 	const [userSelectedCollections, setUserSelectedCollections] = useState([]);
 	const [searchQueryResult, setSearchQueryResults] = useState([]);
-	const handleUrlChange = (e, { value }) => {
-		setUserFeedUrl(value);
+	const handleUrlChange = (e) => {
+		setUserFeedUrl(e.target.value);
 	};
 	const handleCollectionChange = (e, { value }) => {
 		setUserMadeCollection(value);
@@ -26,7 +68,7 @@ export default function FeedForm() {
 	const handleSelectedCollectionChange = (e, { value }) => {
 		setUserSelectedCollections(value);
 	};
-	const storeFeed = async (value) => {
+	const storeFeed = async (value, feed) => {
 		if (value in state.feedDataStore) {
 			console.log('Already exist');
 		} else {
@@ -35,13 +77,12 @@ export default function FeedForm() {
 				payload: value
 			});
 		}
-		// try {
-		//   const feed = await fetchFeed(value);
-		//   dispatch({ type: "ADD_FEED_DATA", payload: [value, feed] });
-		//   dispatch({ type: "ADD_TO_FEED_LIST", payload: feed });
-		// } catch (err) {
-		//   throw err;
-		// }
+		try {
+			dispatch({ type: 'ADD_FEED_DATA', payload: [value, feed] });
+			dispatch({ type: 'ADD_TO_FEED_LIST', payload: feed });
+		} catch (err) {
+			throw err;
+		}
 	};
 	const handleAddCollectionSubmit = () => {
 		if (userMadeCollection !== '') {
@@ -57,12 +98,22 @@ export default function FeedForm() {
 		}
 	};
 	const handleSubmit = () => {
-		storeFeed(userFeedUrl);
-		handleAddCollectionSubmit();
-		setUserMadeCollection('');
-		setUserFeedUrl('');
-		setUserSelectedCollections('');
-		setAddCollectionsToggle(false);
+		if (userFeedUrl != '') {
+			storeFeed(userFeedUrl, userFeed);
+			handleAddCollectionSubmit();
+			setUserMadeCollection('');
+			setUserFeedUrl('');
+			setSearchQueryResults([]);
+			setUserSelectedCollections('');
+			setAddCollectionsToggle(false);
+		} else {
+			console.log('Nothing there');
+			setUserMadeCollection('');
+			setUserSelectedCollections('');
+			setSearchQueryResults([]);
+			setAddCollectionsToggle(false);
+			//give user some response
+		}
 	};
 	///some sought of feedback to user that it is done (ui-feat)
 
@@ -76,30 +127,55 @@ export default function FeedForm() {
 	/// Make option to try with the feed url if not then fetch url try
 
 	const setRssLink = async (url, feedUrl) => {
-		//first fetch the feed link from the freedly api
-		feedUrl = feedUrl.slice(5);
-		let sfeedUrl = feedUrl;
-		//check this regular expression
-		sfeedUrl = sfeedUrl.replace(/^http:\/\//i, 'https://');
-		let userUrl = null;
-		if (sfeedUrl === feedUrl) {
-			try {
-				userUrl = await fetchFeed(sfeedUrl);
-			} catch (err) {
-				userUrl = await getRssLinkFromWebsite(url);
-			}
+		if (userFeedUrl in state.feedDataStore) {
+			//show user that this link already exist
+			setUserFeedUrl('');
 		} else {
-			try {
-				userUrl = await fetchFeed(sfeedUrl);
-			} catch (err) {
+			//first fetch the feed link from the freedly api
+			feedUrl = feedUrl.slice(5);
+			let sfeedUrl = feedUrl;
+			//check this regular expression
+			sfeedUrl = sfeedUrl.replace(/^http:\/\//i, 'https://');
+			let userUrl = null;
+			let userFeed = null;
+			if (sfeedUrl === feedUrl) {
 				try {
-					userUrl = await fetchFeed(feedUrl);
+					let data = await fetchFeed(sfeedUrl);
+					userUrl = sfeedUrl;
+					userFeed = data;
 				} catch (err) {
-					userUrl = await getRssLinkFromWebsite(url);
+					try {
+						userUrl = await getRssLinkFromWebsite(url);
+						userFeed = fetchFeed(userUrl);
+					} catch {
+						userUrl = '';
+						userFeed = null;
+					}
+				}
+			} else {
+				try {
+					let data = await fetchFeed(sfeedUrl);
+					userUrl = sfeedUrl;
+					userFeed = data;
+				} catch (err) {
+					try {
+						let data = await fetchFeed(feedUrl);
+						userUrl = feedUrl;
+						userFeed = data;
+					} catch (err) {
+						try {
+							userUrl = await getRssLinkFromWebsite(url);
+							userFeed = fetchFeed(userUrl);
+						} catch {
+							userUrl = '';
+							userFeed = null;
+						}
+					}
 				}
 			}
+			setUserFeedUrl(userUrl);
+			setUserFeed(userFeed);
 		}
-		setUserFeedUrl(userUrl);
 	};
 
 	///handle search click result rss feature  handle
@@ -110,9 +186,21 @@ export default function FeedForm() {
 	};
 
 	const searchResults = searchQueryResult.map((item) => (
-		<Card onClick={() => handleSearchResultClick(item.website, item.feedId)}>
+		<Card
+			onClick={() => {
+				// console.log(selectedSourcesSet);
+				if (!selectedSourcesSet.current.has(item.website)) {
+					// console.log(item.website);
+
+					handleSearchResultClick(item.website, item.feedId);
+					setSelectedSources([...selectedSources, item.website]);
+				}
+				selectedSourcesSet.current.add(item.website);
+			}}
+		>
 			<Image src={item.visualUrl} wrapped ui={false} />
 			<Card.Content>{item.title}</Card.Content>
+			<Card.Content>{item.topics}</Card.Content>
 		</Card>
 	));
 
@@ -136,57 +224,158 @@ export default function FeedForm() {
 	}));
 
 	return (
-		<div>
-			<div>Keyword or RSS URL for subscription</div>
-			<Form onSubmit={handleSubmit}>
-				<Form.Input
-					placeholder="Add URL"
-					name="Add URL"
-					value={userFeedUrl}
-					onChange={handleUrlChange}
-				/>
-				<Form.Button
-					attached="bottom"
-					onClick={handleSearchClick}
-					content="Search/Add"
-				></Form.Button>
-				<Card.Group itemsPerRow={3}>{searchResults}</Card.Group>
+		<div className={classes.root}>
+			<Grid container style={{ flexGrow: 1 }} spacing={6}>
+				<Grid item md={6} style={{ borderRight: '1px solid gray' }}>
+					<div
+						style={{
+							display: 'flex',
+							justifyContent: 'center',
+							alignItems: 'center'
+						}}
+					>
+						<TextField
+							size="small"
+							id="outlined-basic"
+							label="Search Keyword"
+							variant="outlined"
+							onChange={handleUrlChange}
+							style={{ marginRight: '10px', width: '60%' }}
+						/>
 
-				<div>Select the Collection to add the feed to</div>
-				<Form.Dropdown
-					placeholder="Collection Name"
-					fluid
-					multiple
-					search
-					selection
-					options={collectionOptions}
-					value={userSelectedCollections || []}
-					onChange={handleSelectedCollectionChange}
-				/>
-				<Form.Button
-					attached="bottom"
+						<Button
+							variant="outlined"
+							color="primary"
+							onClick={handleSearchClick}
+							size="large"
+						>
+							Search
+						</Button>
+					</div>
+
+					<Card.Group style={{ marginTop: '10px' }} itemsPerRow={3}>
+						{searchResults}
+					</Card.Group>
+				</Grid>
+				<Grid
+					item
+					md={6}
+					style={{
+						display: 'flex',
+						justifyContent: 'center'
+						// alignItems: 'center'
+					}}
+				>
+					<Paper
+						style={{
+							width: '400px',
+							height: 'wrap',
+							maxHeight: '700px',
+							overflow: 'auto'
+						}}
+					>
+						<div
+							style={{
+								padding: 5,
+								display: 'flex',
+								justifyContent: 'center'
+							}}
+						>
+							<h3>Selected Sources</h3>
+						</div>
+						<Divider />
+						{selectedSources.length === 0 ? (
+							<div
+								style={{
+									display: 'flex',
+									justifyContent: 'center',
+									alignItems: 'center',
+									padding: 10
+								}}
+							>
+								No sources selected
+							</div>
+						) : (
+							<List>
+								{selectedSources.map((source) => (
+									<ListItem>
+										<ListItemAvatar>
+											<Avatar>
+												<LinkIcon />
+											</Avatar>
+										</ListItemAvatar>
+										<ListItemText style={{ width: '50px' }} primary={source} />
+										<ListItemSecondaryAction>
+											<IconButton edge="end" aria-label="delete">
+												<DeleteIcon />
+											</IconButton>
+										</ListItemSecondaryAction>
+									</ListItem>
+								))}
+							</List>
+						)}
+					</Paper>
+				</Grid>
+			</Grid>
+
+			<div>Select the Collection to add the feed to</div>
+			<Form.Dropdown
+				placeholder="Collection Name"
+				fluid
+				multiple
+				search
+				selection
+				options={collectionOptions}
+				value={userSelectedCollections}
+				onChange={handleSelectedCollectionChange}
+			/>
+			<div
+				style={{
+					display: 'flex',
+					justifyContent: 'center',
+					alignItems: 'center'
+				}}
+			>
+				<Button
+					color="primary"
+					variant="outlined"
 					onClick={() => setAddCollectionsToggle(true)}
-					content="Add Collection"
+				>
+					Add Collection
+				</Button>
+			</div>
+
+			{addCollectionsToggle && (
+				<Form.Input
+					placeholder="Add Collection"
+					name="Add Collection"
+					value={userMadeCollection}
+					onChange={handleCollectionChange}
 				/>
-				{addCollectionsToggle && (
-					<Form.Input
-						placeholder="Add Collection"
-						name="Add Collection"
-						value={userMadeCollection}
-						onChange={handleCollectionChange}
-					/>
-				)}
-				<Form.Button content="Submit" />
-			</Form>
+			)}
+			<div
+				style={{
+					display: 'flex',
+					justifyContent: 'center',
+					alignItems: 'center'
+				}}
+			>
+				<Button
+					color="primary"
+					variant="outlined"
+					content="Submit"
+					onClick={handleSubmit}
+				>
+					Sumbit
+				</Button>
+			</div>
+			{/* </Form> */}
 		</div>
 	);
 }
 
 /*
 Validate rss feed feature work with the node environment i.e. in the (electron shell )
-
-
-
 Key word searching error fix in the file
 Currently wrong architecture for the keyword searching
 throw statements check in the state

@@ -11,7 +11,7 @@ import Dashboard from './views/Dashboard';
 
 function App() {
 	// const queryClient = new QueryClient();
-
+	document.body.style = 'background: #F2F2F2;';
 	return (
 		<UserProvider>
 			{/* <QueryClientProvider client={queryClient}> */}
